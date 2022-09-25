@@ -1,5 +1,7 @@
 # format-on-leave.nvim
-Autocmd on `BufLeave` for synchronous `vim.lsp.buf.format` with disable/enable commands
+Autocmd on `BufLeave` for synchronous `vim.lsp.buf.format` with disable/enable commands.
+
+Mainly for users who wants to use `auto save` but don't want to format the code every time nvim saves the code.
 
 
 ## Installation
@@ -17,7 +19,7 @@ require('format-on-leave').setup {
 require('fomrat-on-leave').setup {
 	save_after_format = true, -- Save after the format
 	events = { 'BufLeave' },  -- When to trigger lsp format
-	pattern = { '*' },        -- Which files pattern to fomrat
+	pattern = { '*' },        -- Which files pattern to format
 	formatting_options = nil, --Passed to `vim.lsp.buf.format` formatting_options
 	filter = nil,             -- Passed to `vim.lsp.buf.format` filter
 }
