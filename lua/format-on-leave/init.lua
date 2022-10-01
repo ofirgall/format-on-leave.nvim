@@ -4,17 +4,19 @@ local api = vim.api
 local auto_format_cmd = -1
 local loaded_config = {}
 
-M.disable_auto_format = function()
+M.disable = function()
 	if auto_format_cmd ~= -1 then
 		vim.api.nvim_del_autocmd(auto_format_cmd)
 		auto_format_cmd = -1
 	end
 end
+-- Backwards compatibility
+M.disable_auto_format = M.disable
 
-M.enable_auto_format = function()
-	M.disable_auto_format()
+M.enable = function()
+	M.disable()
 
-	auto_format_cmd = vim.api.nvim_create_autocmd(loaded_config.events, {
+	auto_format_cmd = vim.api.nvim_create_autocmd('WinLeave', {
 		pattern = loaded_config.pattern,
 		callback = function(params)
 			local bufid = params.buf
@@ -53,11 +55,12 @@ M.enable_auto_format = function()
 			-- table.insert(buffers_in_format, buf)
 		end
 	})
-
 end
 
+-- Backwards compatibility
+M.enable_auto_format = M.enable
+
 local default_config = {
-	events = { 'BufLeave' },
 	pattern = { '*' },
 	formatting_options = nil,
 	filter = nil,
@@ -70,9 +73,9 @@ M.setup = function(config)
 
 	loaded_config = config
 
-	vim.api.nvim_create_user_command('FormatEnable', M.enable_auto_format, {})
-	vim.api.nvim_create_user_command('FormatDisable', M.disable_auto_format, {})
-	M.enable_auto_format()
+	vim.api.nvim_create_user_command('FormatEnable', M.enable, {})
+	vim.api.nvim_create_user_command('FormatDisable', M.disable, {})
+	M.enable()
 end
 
 return M
