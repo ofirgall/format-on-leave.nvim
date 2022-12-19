@@ -1,5 +1,7 @@
 local M = {}
 
+local lsp_progress = require('format-on-leave.lsp_progress')
+
 local api = vim.api
 local auto_format_cmd = -1
 local loaded_config = {}
@@ -30,7 +32,7 @@ M.enable = function()
 				return
 			end
 
-			if #vim.lsp.get_active_clients({ bufnr = bufid }) == 0 then
+			if not lsp_progress.is_buffer_ready(bufid) then
 				return
 			end
 
@@ -76,6 +78,7 @@ M.setup = function(config)
 	vim.api.nvim_create_user_command('FormatEnable', M.enable, {})
 	vim.api.nvim_create_user_command('FormatDisable', M.disable, {})
 	M.enable()
+	lsp_progress.setup()
 end
 
 return M
