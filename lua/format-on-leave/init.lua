@@ -15,6 +15,28 @@ end
 -- Backwards compatibility
 M.disable_auto_format = M.disable
 
+local function list_buf_wins(buf)
+	local wins = api.nvim_list_wins()
+	local buf_wins = {}
+	for _, win in ipairs(wins) do
+		local b = api.nvim_win_get_buf(win)
+		if b == buf then
+			table.insert(buf_wins, win)
+		end
+	end
+
+	return buf_wins
+end
+
+local function get_win_cursors(wins)
+	local wins_cursors = {}
+	for _, win in ipairs(wins) do
+		wins_cursors[win] = api.nvim_win_get_cursor(win)
+	end
+
+	return wins_cursors
+end
+
 M.enable = function()
 	M.disable()
 
@@ -36,6 +58,10 @@ M.enable = function()
 				return
 			end
 
+			-- Save all cursor positions for all in-active windows (to fix sumenko lua bug)
+			local buf_wins = list_buf_wins(bufid)
+			local wins_cursors = get_win_cursors(buf_wins)
+
 			-- TODO: change to async true if you can write/callback after sync,
 			-- callback = function(params)
 			-- 	for _, bufnr in ipairs(buffers_in_format) do
@@ -53,6 +79,11 @@ M.enable = function()
 			})
 			if loaded_config.save_after_format then
 				vim.cmd("silent! write")
+			end
+
+			-- Restore cursor positions (to fix sumenko lua bug)
+			for win, cursor in pairs(wins_cursors) do
+				api.nvim_win_set_cursor(win, cursor)
 			end
 			-- table.insert(buffers_in_format, buf)
 		end
