@@ -21,6 +21,7 @@ require('format-on-leave').setup {
 	pattern = { '*' },        -- Which files pattern to format
 	formatting_options = nil, -- Passed to `vim.lsp.buf.format` formatting_options
 	filter = nil,             -- Passed to `vim.lsp.buf.format` filter
+	format_func = nil         -- Format with custom function, first param is whether to async format or not
 }
 ```
 

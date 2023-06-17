@@ -71,12 +71,19 @@ M.enable = function()
 			-- 		end
 			-- 	end
 			-- end
-			vim.lsp.buf.format({
-				bufnr = bufid,
-				async = not loaded_config.save_after_format, -- Async when we dont need to save
-				formatting_options = loaded_config.formatting_options,
-				filter = loaded_config.filter
-			})
+			local async = not loaded_config.save_after_format -- Async when we dont need to save
+
+			if loaded_config.format_func then
+				loaded_config.format_func(async)
+			else
+				vim.lsp.buf.format({
+					bufnr = bufid,
+					async = async,
+					formatting_options = loaded_config.formatting_options,
+					filter = loaded_config.filter
+				})
+			end
+
 			if loaded_config.save_after_format then
 				vim.cmd("silent! write")
 			end
@@ -98,6 +105,7 @@ local default_config = {
 	formatting_options = nil,
 	filter = nil,
 	save_after_format = true,
+	format_func = nil,
 }
 
 M.setup = function(config)
