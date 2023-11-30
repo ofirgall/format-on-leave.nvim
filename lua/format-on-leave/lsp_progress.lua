@@ -50,6 +50,9 @@ local function handle_progress(err, msg, info)
             end
         end
     elseif val.kind == "end" then
+        if AMOUNT_IN_PROGRESS[client_key] == nil then
+            return
+        end
         AMOUNT_IN_PROGRESS[client_key] = AMOUNT_IN_PROGRESS[client_key] - 1
         if AMOUNT_IN_PROGRESS[client_key] == 0 then
             if CLIENT_TIMER[client_key] then
