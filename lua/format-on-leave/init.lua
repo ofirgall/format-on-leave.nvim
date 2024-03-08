@@ -1,10 +1,11 @@
 local M = {}
 
-local lsp_progress = require('format-on-leave.lsp_progress')
+local lsp_progress = require("format-on-leave.lsp_progress")
 
 local api = vim.api
 local auto_format_cmd = -1
 local loaded_config = {}
+local c = 1
 
 M.disable = function()
 	if auto_format_cmd ~= -1 then
@@ -15,12 +16,11 @@ end
 -- Backwards compatibility
 M.disable_auto_format = M.disable
 
-local function list_buf_wins(buf)
+local function list_bufs_wins(bufs)
 	local wins = api.nvim_list_wins()
 	local buf_wins = {}
 	for _, win in ipairs(wins) do
-		local b = api.nvim_win_get_buf(win)
-		if b == buf then
+		if vim.tbl_contains(bufs, api.nvim_win_get_buf(win)) then
 			table.insert(buf_wins, win)
 		end
 	end
@@ -40,60 +40,83 @@ end
 M.enable = function()
 	M.disable()
 
-	auto_format_cmd = vim.api.nvim_create_autocmd('WinLeave', {
+	auto_format_cmd = vim.api.nvim_create_autocmd("WinLeave", {
 		pattern = loaded_config.pattern,
 		callback = function(params)
-			local bufid = params.buf
-			local diff = api.nvim_get_option_value('diff', { buf = bufid })
-			if diff then
-				return
-			end
+			local formatted_buf = params.buf
+			print("bufid " .. formatted_buf .. " " .. c)
+			c = c + 1
+			vim.schedule(function()
+				-- Don't run format when moving to floating windows
+				if api.nvim_win_get_config(0).relative ~= "" then
+					print("relative " .. c)
+					c = c + 1
+					return
+				end
 
-			local readonly = api.nvim_get_option_value('readonly', { buf = bufid })
-			if readonly then
-				return
-			end
+				local diff = api.nvim_get_option_value("diff", { buf = formatted_buf })
+				if diff then
+					return
+				end
 
-			if not lsp_progress.is_buffer_ready(bufid) then
-				return
-			end
+				local readonly = api.nvim_get_option_value("readonly", { buf = formatted_buf })
+				if readonly then
+					print("readonly " .. c)
+					c = c + 1
+					return
+				end
 
-			-- Save all cursor positions for all in-active windows (to fix sumenko lua bug)
-			local buf_wins = list_buf_wins(bufid)
-			local wins_cursors = get_win_cursors(buf_wins)
+				if not lsp_progress.is_buffer_ready(formatted_buf) then
+					print("not ready " .. c)
+					c = c + 1
+					return
+				end
 
-			-- TODO: change to async true if you can write/callback after sync,
-			-- callback = function(params)
-			-- 	for _, bufnr in ipairs(buffers_in_format) do
-			-- 		if params.buf == bufnr then
-			-- 			-- :bufdo write
-			-- 			break
-			-- 		end
-			-- 	end
-			-- end
-			local async = not loaded_config.save_after_format -- Async when we dont need to save
+				-- TODO: change to async true if you can write/callback after sync,
+				-- callback = function(params)
+				-- 	for _, bufnr in ipairs(buffers_in_format) do
+				-- 		if params.buf == bufnr then
+				-- 			-- :bufdo write
+				-- 			break
+				-- 		end
+				-- 	end
+				-- end
 
-			if loaded_config.format_func then
-				loaded_config.format_func(async)
-			else
-				vim.lsp.buf.format({
-					bufnr = bufid,
-					async = async,
-					formatting_options = loaded_config.formatting_options,
-					filter = loaded_config.filter
-				})
-			end
+				-- Save all cursor positions for all in-active windows (to fix sumenko lua bug)
+				local curr_buff = api.nvim_get_current_buf()
+				-- local wins_cursors = get_win_cursors(list_bufs_wins({formatted_buf, curr_buff}))
+				local wins_cursors = get_win_cursors(list_bufs_wins({curr_buff}))
+				vim.print(wins_cursors)
 
-			if loaded_config.save_after_format then
-				vim.cmd("silent! write")
-			end
+				api.nvim_set_current_buf(formatted_buf)
 
-			-- Restore cursor positions (to fix sumenko lua bug)
-			for win, cursor in pairs(wins_cursors) do
-				api.nvim_win_set_cursor(win, cursor)
-			end
-			-- table.insert(buffers_in_format, buf)
-		end
+				local async = not loaded_config.save_after_format -- Async when we dont need to save
+				-- if loaded_config.format_func then
+				-- 	loaded_config.format_func(async, bufid)
+				-- 	print("formatted " .. c)
+				-- 	c = c + 1
+				-- else
+				-- 	vim.lsp.buf.format({
+				-- 		bufnr = bufid,
+				-- 		async = async,
+				-- 		formatting_options = loaded_config.formatting_options,
+				-- 		filter = loaded_config.filter,
+				-- 	})
+				-- end
+
+				if loaded_config.save_after_format then
+					-- vim.cmd("silent! write")
+				end
+
+				api.nvim_set_current_buf(curr_buff)
+				-- Restore cursor positions (to fix sumenko lua bug)
+				-- for win, cursor in pairs(wins_cursors) do
+				-- 	api.nvim_win_set_cursor(win, cursor)
+				-- end
+				-- table.insert(buffers_in_format, buf)
+				-- restore_buff()
+			end)
+		end,
 	})
 end
 
@@ -101,7 +124,7 @@ end
 M.enable_auto_format = M.enable
 
 local default_config = {
-	pattern = { '*' },
+	pattern = { "*" },
 	formatting_options = nil,
 	filter = nil,
 	save_after_format = true,
@@ -110,12 +133,12 @@ local default_config = {
 
 M.setup = function(config)
 	config = config or {}
-	config = vim.tbl_deep_extend('keep', config, default_config)
+	config = vim.tbl_deep_extend("keep", config, default_config)
 
 	loaded_config = config
 
-	vim.api.nvim_create_user_command('FormatEnable', M.enable, {})
-	vim.api.nvim_create_user_command('FormatDisable', M.disable, {})
+	vim.api.nvim_create_user_command("FormatEnable", M.enable, {})
+	vim.api.nvim_create_user_command("FormatDisable", M.disable, {})
 	M.enable()
 	lsp_progress.setup()
 end
