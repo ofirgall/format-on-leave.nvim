@@ -80,12 +80,12 @@ M.enable = function()
 					bufnr = bufid,
 					async = async,
 					formatting_options = loaded_config.formatting_options,
-					filter = loaded_config.filter
+					filter = loaded_config.filter,
 				})
 			end
 
 			if loaded_config.save_after_format then
-				vim.cmd("silent! write")
+				vim.cmd('silent! write')
 			end
 
 			-- Restore cursor positions (to fix sumenko lua bug)
@@ -93,7 +93,7 @@ M.enable = function()
 				api.nvim_win_set_cursor(win, cursor)
 			end
 			-- table.insert(buffers_in_format, buf)
-		end
+		end,
 	})
 end
 
