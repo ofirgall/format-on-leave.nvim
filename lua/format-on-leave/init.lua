@@ -54,7 +54,20 @@ M.enable = function()
 				return
 			end
 
+			-- FIXME: conform support (need to check for formatters as well)
 			if not lsp_progress.is_buffer_ready(bufid) then
+				return
+			end
+
+			-- TODO: try to no format when leaving to floating windows
+			if loaded_config.conform then
+				loaded_config.format_func(true) -- always as async with conform
+
+				if loaded_config.save_after_format then
+					vim.cmd('silent! write')
+				end
+
+				-- FIXME: add doc why the user need to restore cursor
 				return
 			end
 
@@ -106,6 +119,8 @@ local default_config = {
 	filter = nil,
 	save_after_format = true,
 	format_func = nil,
+
+	conform = false,
 }
 
 M.setup = function(config)
