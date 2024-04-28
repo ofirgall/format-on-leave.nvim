@@ -44,6 +44,8 @@ M.enable = function()
 		pattern = loaded_config.pattern,
 		callback = function(params)
 			local bufid = params.buf
+			local win = api.nvim_get_current_win()
+
 			local diff = api.nvim_get_option_value('diff', { buf = bufid })
 			if diff then
 				return
@@ -67,7 +69,7 @@ M.enable = function()
 						return
 					end
 
-					loaded_config.format_func(true, bufid) -- always as async with conform
+					loaded_config.format_func(true, bufid, win) -- always as async with conform
 					-- FIXME: add doc why user need to save (maybe provide a callback func)
 				end)
 
@@ -81,7 +83,7 @@ M.enable = function()
 			local async = not loaded_config.save_after_format -- Async when we dont need to save
 
 			if loaded_config.format_func then
-				loaded_config.format_func(async, bufid)
+				loaded_config.format_func(async, bufid, win)
 			else
 				vim.lsp.buf.format({
 					bufnr = bufid,
