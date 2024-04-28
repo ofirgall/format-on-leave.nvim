@@ -67,7 +67,7 @@ M.enable = function()
 						return
 					end
 
-					loaded_config.format_func(bufid, true) -- always as async with conform
+					loaded_config.format_func(true, bufid) -- always as async with conform
 					-- FIXME: add doc why user need to save (maybe provide a callback func)
 				end)
 
@@ -81,7 +81,7 @@ M.enable = function()
 			local async = not loaded_config.save_after_format -- Async when we dont need to save
 
 			if loaded_config.format_func then
-				loaded_config.format_func(bufid, async)
+				loaded_config.format_func(async, bufid)
 			else
 				vim.lsp.buf.format({
 					bufnr = bufid,
