@@ -59,11 +59,11 @@ M.enable = function()
 				return
 			end
 
-			if loaded_config.conform then
+			if loaded_config.conform.enabled then
 				-- FIXME: add doc why the user need to restore cursor
 				vim.schedule(function()
-					-- Don't run format when moving to floating windows
-					if api.nvim_win_get_config(0).relative ~= '' then
+					-- Don't run format when moving to blacklisted ft
+					if vim.tbl_contains(loaded_config.conform.target_ft_blacklist, vim.o.ft) then
 						return
 					end
 
@@ -113,7 +113,12 @@ local default_config = {
 	save_after_format = true,
 	format_func = nil,
 
-	conform = false,
+	conform = {
+		enabled = false,
+
+		-- Which filetypes shouldn't trigger format when moved into
+		target_ft_blacklist = { 'sagarename' },
+	},
 }
 
 M.setup = function(config)
