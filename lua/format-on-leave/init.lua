@@ -78,15 +78,6 @@ M.enable = function()
 			local buf_wins = list_buf_wins(bufid)
 			local wins_cursors = get_win_cursors(buf_wins)
 
-			-- TODO: change to async true if you can write/callback after sync,
-			-- callback = function(params)
-			-- 	for _, bufnr in ipairs(buffers_in_format) do
-			-- 		if params.buf == bufnr then
-			-- 			-- :bufdo write
-			-- 			break
-			-- 		end
-			-- 	end
-			-- end
 			local async = not loaded_config.save_after_format -- Async when we dont need to save
 
 			if loaded_config.format_func then
@@ -108,7 +99,6 @@ M.enable = function()
 			for win, cursor in pairs(wins_cursors) do
 				api.nvim_win_set_cursor(win, cursor)
 			end
-			-- table.insert(buffers_in_format, buf)
 		end,
 	})
 end
