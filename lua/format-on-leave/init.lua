@@ -59,15 +59,18 @@ M.enable = function()
 				return
 			end
 
-			-- TODO: try to no format when leaving to floating windows
 			if loaded_config.conform then
-				loaded_config.format_func(true) -- always as async with conform
-
-				if loaded_config.save_after_format then
-					vim.cmd('silent! write')
-				end
-
 				-- FIXME: add doc why the user need to restore cursor
+				vim.schedule(function()
+					-- Don't run format when moving to floating windows
+					if api.nvim_win_get_config(0).relative ~= '' then
+						return
+					end
+
+					loaded_config.format_func(bufid, true) -- always as async with conform
+					-- FIXME: add doc why user need to save (maybe provide a callback func)
+				end)
+
 				return
 			end
 
@@ -87,7 +90,7 @@ M.enable = function()
 			local async = not loaded_config.save_after_format -- Async when we dont need to save
 
 			if loaded_config.format_func then
-				loaded_config.format_func(async)
+				loaded_config.format_func(bufid, async)
 			else
 				vim.lsp.buf.format({
 					bufnr = bufid,
