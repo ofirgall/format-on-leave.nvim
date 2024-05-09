@@ -64,6 +64,11 @@ M.enable = function()
 			if loaded_config.conform.enabled then
 				-- FIXME: add doc why the user need to restore cursor
 				vim.schedule(function()
+					-- Make sure we don't try to run format on invalid window/buffer
+					if not api.nvim_buf_is_valid(bufid) or not api.nvim_win_is_valid(win) then
+						return
+					end
+
 					-- Don't run format when moving to blacklisted ft
 					if vim.tbl_contains(loaded_config.conform.target_ft_blacklist, vim.o.ft) then
 						return
