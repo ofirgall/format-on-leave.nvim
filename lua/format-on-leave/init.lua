@@ -124,7 +124,7 @@ local default_config = {
 		enabled = false,
 
 		-- Which filetypes shouldn't trigger format when moved into
-		target_ft_blacklist = { 'sagarename', 'DressingInput' },
+		target_ft_blacklist = { 'sagarename', 'sagacodeaction', 'DressingInput' },
 	},
 }
 
