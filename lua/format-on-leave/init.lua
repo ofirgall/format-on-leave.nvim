@@ -63,7 +63,7 @@ M.enable = function()
 
 			if loaded_config.conform.enabled then
 				-- FIXME: add doc why the user need to restore cursor
-				vim.schedule(function()
+				vim.defer_fn(function()
 					-- Make sure we don't try to run format on invalid window/buffer
 					if not api.nvim_buf_is_valid(bufid) or not api.nvim_win_is_valid(win) then
 						return
@@ -76,7 +76,7 @@ M.enable = function()
 
 					loaded_config.format_func(true, bufid, win) -- always as async with conform
 					-- FIXME: add doc why user need to save (maybe provide a callback func)
-				end)
+				end, 100)
 
 				return
 			end
