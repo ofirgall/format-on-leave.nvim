@@ -46,7 +46,7 @@ M.enable = function()
 			local bufid = params.buf
 			local win = api.nvim_get_current_win()
 
-			local diff = api.nvim_get_option_value('diff', { buf = bufid })
+			local diff = api.nvim_get_option_value('diff', { win = win })
 			if diff then
 				return
 			end
