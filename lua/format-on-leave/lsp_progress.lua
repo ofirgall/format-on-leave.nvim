@@ -6,7 +6,7 @@ local CLIENT_TIMER = {}
 local uv = vim.loop
 
 function M.is_buffer_ready(bufid)
-	local attached_clients = vim.lsp.get_active_clients({ bufnr = bufid })
+	local attached_clients = vim.lsp.get_clients({ bufnr = bufid })
 	if #attached_clients == 0 then
 		return false
 	end
